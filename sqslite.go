@@ -4,13 +4,18 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"os"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/crowdmob/goamz/sqs"
 )
 
-// formatResp takes the response and formats it in JSON or XML. 
+// formatResp takes the response and formats it in JSON or XML.
 func formatResp(format string, resp interface{}) ([]byte, error) {
 	if format == "json" {
 		return json.Marshal(resp)
@@ -53,6 +58,13 @@ func main() {
 		}
 	}
 
+	const (
+		QueueUrl    = "	https://sqs.us-east-1.amazonaws.com/385697007281/sync-md.fifo"
+		Region      = "us-east-1"
+		CredPath    = "~/.aws/credentials"
+		CredProfile = "sync"
+	)
+
 	c, err := sqs.NewFrom(access, secret, *region)
 	if err != nil {
 		panic(err)
@@ -63,15 +75,28 @@ func main() {
 	}
 
 	if *cmd == "s" {
-		resp, err := q.SendMessage(string(b))
-		if err != nil {
-			panic(err)
+
+		sess := session.New(&aws.Config{
+			Region:      aws.String(Region),
+			Credentials: credentials.NewSharedCredentials(CredPath, CredProfile),
+			MaxRetries:  aws.Int(5),
+		})
+
+		svc := sqs.New(sess)
+
+		// Send message
+		send_params := &sqs.SendMessageInput{
+			MessageBody: aws.String(string(b)), // Required
+			QueueUrl:    aws.String(QueueUrl),  // Required
+			MessageGroupId:    aws.String("1")  // Required
+			//DelaySeconds: aws.Int64(3), // (optional) 傳進去的 message 延遲 n 秒才會被取出, 0 ~ 900s (15 minutes)
 		}
-		b, err := formatResp(*format, resp)
+		send_resp, err := svc.SendMessage(send_params)
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
 		}
-		os.Stdout.Write(b)
+		os.Stdout.Write("[Send message] \n%v \n\n", send_resp)
+
 	} else if *cmd == "r" {
 		resp, err := q.ReceiveMessage(*maxNumberOfMessages)
 		if err != nil {
