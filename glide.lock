@@ -1,0 +1,45 @@
+hash: cf0a58eb76c31dd9b72c5a2e8c9fd8d4088b2f51906194e879225b5ad0fa27a9
+updated: 2019-04-09T13:02:49.747987-04:00
+imports:
+- name: github.com/aws/aws-sdk-go
+  version: 56c1def75689cceec1fa6f14c2eedb4b798827f9
+  subpackages:
+  - aws
+  - aws/awserr
+  - aws/awsutil
+  - aws/client
+  - aws/client/metadata
+  - aws/corehandlers
+  - aws/credentials
+  - aws/credentials/ec2rolecreds
+  - aws/credentials/endpointcreds
+  - aws/credentials/processcreds
+  - aws/credentials/stscreds
+  - aws/csm
+  - aws/defaults
+  - aws/ec2metadata
+  - aws/endpoints
+  - aws/request
+  - aws/session
+  - aws/signer/v4
+  - internal/ini
+  - internal/sdkio
+  - internal/sdkrand
+  - internal/sdkuri
+  - internal/shareddefaults
+  - private/protocol
+  - private/protocol/query
+  - private/protocol/query/queryutil
+  - private/protocol/rest
+  - private/protocol/xml/xmlutil
+  - service/sqs
+  - service/sts
+- name: github.com/crowdmob/goamz
+  version: 3a06871fe9fc0281ca90f3a7d97258d042ed64c0
+  subpackages:
+  - sqs
+- name: github.com/jessevdk/go-flags
+  version: c0795c8afcf41dd1d786bebce68636c199b3bb45
+- name: github.com/jmespath/go-jmespath
+  version: c2b33e8439af944379acbdd9c3a5fe0bc44bd8a5
+testImports: []
