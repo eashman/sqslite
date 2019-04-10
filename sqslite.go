@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -14,13 +13,10 @@ import (
 )
 
 func main() {
-	access := os.Getenv("AWS_ACCESS_KEY_ID")
-	secret := os.Getenv("AWS_SECRET_ACCESS_KEY")
-	region := os.Getenv("AWS_REGION")
 
 	var opts struct {
 		File    string `short:"f" long:"file" description:"A file" value-name:"FILE"`
-		Queue   string `short:"q" long:"queue" description:"Queue to User" value-name:"QUEUE" default:"https://sqs.us-east-1.amazonaws.com/385697007281/sync-md.fifo"`
+		Queue   string `short:"q" long:"queue" description:"Queue URL" value-name:"QUEUE" default:"https://sqs.us-east-1.amazonaws.com/385697007281/sync-md.fifo"`
 		Config  string `short:"c" long:"config" description:"Config file location" value-name:"CONFIG"`
 		Profile string `short:"p" long:"profile" description:"Config Profile name" value-name:"PROFILE"`
 	}
@@ -29,32 +25,19 @@ func main() {
 	currentTime := time.Now().Format("2006-01-02 15:04:05")
 
 	fmt.Println(currentTime, " - FILE - name: ", strings.TrimSpace(opts.File))
-	// Check required environment variables
-	if access == "" {
-		panic("AWS_ACCESS_KEY_ID is undefined")
-	}
 
-	if secret == "" {
-		panic("AWS_SECRET_ACCESS_KEY is undefined")
-	}
-
-	if region == "" {
-		panic("AWS_REGION is undefined")
-	}
+	creds := credentials.NewStaticCredentials("", "", "")
 
 	if opts.Config == "" {
-		sess, err := session.NewSession(&aws.Config{
-			Region:      aws.String(region),
-			Credentials: credentials.NewStaticCredentials(access, secret, ""),
-			MaxRetries:  aws.Int(2),
-		})
+		creds = credentials.NewEnvCredentials()
 	} else {
-		sess, err := session.NewSession(&aws.Config{
-			Region:      aws.String(region),
-			Credentials: credentials.NewSharedCredentials(opts.Config, opts.Profile),
-			MaxRetries:  aws.Int(2),
-		})
+		creds = credentials.NewSharedCredentials(opts.Config, opts.Profile)
 	}
+
+	sess, err := session.NewSession(&aws.Config{
+		Credentials: creds,
+		MaxRetries:  aws.Int(2),
+	})
 
 	//svc := sqs.New(sess, aws.NewConfig().WithLogLevel(aws.LogDebugWithHTTPBody))
 	svc := sqs.New(sess)
