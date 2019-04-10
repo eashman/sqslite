@@ -19,6 +19,7 @@ func main() {
 		Queue   string `short:"q" long:"queue" description:"Queue URL" value-name:"QUEUE" default:"https://sqs.us-east-1.amazonaws.com/385697007281/sync-md.fifo"`
 		Config  string `short:"c" long:"config" description:"Config file location" value-name:"CONFIG"`
 		Profile string `short:"p" long:"profile" description:"Config Profile name" value-name:"PROFILE"`
+		Region  string `short:"r" long:"region" description:"AWS Region Name" value-name:"REGION"`
 	}
 
 	flags.Parse(&opts)
@@ -35,6 +36,7 @@ func main() {
 	}
 
 	sess, err := session.NewSession(&aws.Config{
+		Region:      aws.String(opts.Region),
 		Credentials: creds,
 		MaxRetries:  aws.Int(2),
 	})
