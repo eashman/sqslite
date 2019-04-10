@@ -19,8 +19,10 @@ func main() {
 	region := os.Getenv("AWS_REGION")
 
 	var opts struct {
-		File  string `short:"f" long:"file" description:"A file" value-name:"FILE"`
-		Queue string `short:"q" long:"queue" description:"Queue to User" value-name:"QUEUE" default:"https://sqs.us-east-1.amazonaws.com/385697007281/sync-md.fifo"`
+		File    string `short:"f" long:"file" description:"A file" value-name:"FILE"`
+		Queue   string `short:"q" long:"queue" description:"Queue to User" value-name:"QUEUE" default:"https://sqs.us-east-1.amazonaws.com/385697007281/sync-md.fifo"`
+		Config  string `short:"c" long:"config" description:"Config file location" value-name:"CONFIG"`
+		Profile string `short:"p" long:"profile" description:"Config Profile name" value-name:"PROFILE"`
 	}
 
 	flags.Parse(&opts)
@@ -40,11 +42,19 @@ func main() {
 		panic("AWS_REGION is undefined")
 	}
 
-	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String(region),
-		Credentials: credentials.NewStaticCredentials(access, secret, ""),
-		MaxRetries:  aws.Int(2),
-	})
+	if opts.Config == "" {
+		sess, err := session.NewSession(&aws.Config{
+			Region:      aws.String(region),
+			Credentials: credentials.NewStaticCredentials(access, secret, ""),
+			MaxRetries:  aws.Int(2),
+		})
+	} else {
+		sess, err := session.NewSession(&aws.Config{
+			Region:      aws.String(region),
+			Credentials: credentials.NewSharedCredentials(opts.Config, opts.Profile),
+			MaxRetries:  aws.Int(2),
+		})
+	}
 
 	//svc := sqs.New(sess, aws.NewConfig().WithLogLevel(aws.LogDebugWithHTTPBody))
 	svc := sqs.New(sess)
